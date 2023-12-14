@@ -1,71 +1,46 @@
-# node-exec-function README
+# Node Execute Function Extension
 
-This is the README for your extension "node-exec-function". After writing up a brief description, we recommend including the following sections.
+## erview
+
+The Node Execute Function Extension for Visual Studio Code allows users to quickly execute JavaScript functions directly from their code editor. It detects function declarations in the active file and provides a simple interface for running these functions in a separate environment.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Function Detection: Detects both traditional and arrow function declarations in the active file.
+- Quick Execution: Easily execute any detected function with a few clicks.
+- Terminal Integration: Functions are executed in a VS Code terminal, allowing for live output observation.
+- Temporary File Creation: Generates a temporary file for function execution to avoid altering the original source code.
+- Auto Clean-up: Automatically deletes temporary files after the terminal is closed.
 
-For example if there is an image subfolder under your extension project workspace:
+## Usage
 
-\!\[feature X\]\(images/feature-x.png\)
+1. Open a JavaScript File: Open and focus on a JavaScript file in your editor.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+2. Trigger the Command: Run the command node-exec-function.executeFunction from the Command Palette (Ctrl+Shift+P or Cmd+Shift+P on macOS).
+
+3. Select a Function: Choose a function from the list of detected functions in your file.
+
+4. Watch the Output: The function will run in a new terminal window. Monitor the output in real time.
+
+5. Close the Terminal: Press Enter in the terminal after execution to close it and trigger the clean-up of temporary files.
+
+## Installation
+
+Install directly from the Visual Studio Code Marketplace. Search for "Node Execute Function" and click install.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Visual Studio Code
+- Node.js environment
+- Permissions to create and delete temporary files in your work directory
+- Limitations
+- Supports only simple function execution without arguments.
+- Designed for JavaScript files; other file types are not supported.
 
-## Extension Settings
+## Contributing
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Contributions are welcome! Feel free to open issues or submit pull requests on the repository for bug fixes, improvements, or new features.
 
-For example:
+## License
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+This extension is released under MIT, see the LICENSE file for more details.
