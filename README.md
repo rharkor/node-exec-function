@@ -44,6 +44,7 @@ Contributions are welcome! Feel free to open issues or submit pull requests on t
 Note to myself command to publish:
 `vsce package`
 https://marketplace.visualstudio.com/manage/publishers/rharkor?auth_redirect=True
+Publish: `vsce publish`
 
 ## License
 
