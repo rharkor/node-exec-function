@@ -1,95 +1,93 @@
 import * as vscode from "vscode";
-import * as fs from "fs/promises";
-import { exec } from "child_process";
+import * as path from "path";
+import * as fs from "fs";
+
+const name = "node-exec-function";
 
 export function activate(context: vscode.ExtensionContext) {
-  const log = (...args: Parameters<typeof console.log>) => {
-    return console.log("node-exec-function", ...args);
-  };
-
   let disposable = vscode.commands.registerCommand(
-    "node-exec-function.executeFunction",
+    `${name}.executeFunction`,
     async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
-        vscode.window.showInformationMessage("No open text editor");
+        vscode.window.showErrorMessage("No active editor.");
         return;
       }
 
       const document = editor.document;
-      const documentText = document.getText();
+      const filePath = document.fileName;
+      const fileExtension = path.extname(filePath);
 
-      const functionList = findFunctions(documentText);
-      const item = await vscode.window.showQuickPick(functionList, {
-        placeHolder: "Select a function to execute",
-        canPickMany: false,
-      });
-      if (!item) {
+      if (fileExtension !== ".js" && fileExtension !== ".ts") {
+        vscode.window.showErrorMessage("Only .js and .ts files are supported.");
         return;
       }
-      await executeNodeFunction(item.label, document.fileName, documentText);
+
+      const fileContent = document.getText();
+      const functions = findFunctions(fileContent);
+
+      if (functions.length === 0) {
+        vscode.window.showErrorMessage(
+          "No functions found in the current file."
+        );
+        return;
+      }
+
+      const selectedFunction = await vscode.window.showQuickPick(functions, {
+        placeHolder: "Select a function to execute",
+      });
+
+      if (!selectedFunction) {
+        return;
+      }
+
+      try {
+        const functionName = selectedFunction.split("(")[0].trim(); // Extract function name
+        const terminal = vscode.window.createTerminal(
+          `node-exec-function: ${functionName}`
+        );
+
+        // Create a temporary file path
+        const splitted = filePath.split("/");
+        const tempFilePath = `${splitted.slice(0, -1).join("/")}/.${splitted.at(
+          -1
+        )}`;
+
+        // Write the file content with the function call
+        const newFileContent = `${fileContent}\n${functionName}();`;
+        await fs.promises.writeFile(tempFilePath, newFileContent);
+
+        // Execute the function using tsx
+        const functionCmd = `npx -y tsx ${tempFilePath} && echo "\nPress enter to close the terminal" && read && exit`;
+        terminal.sendText(functionCmd);
+
+        // Clean up temp file when terminal closes
+        vscode.window.onDidCloseTerminal((t) => {
+          if (t === terminal) {
+            fs.promises.unlink(tempFilePath);
+          }
+        });
+
+        terminal.show();
+      } catch (error) {
+        vscode.window.showErrorMessage(`Error executing function: ${error}`);
+      }
     }
   );
 
   context.subscriptions.push(disposable);
 }
 
-function findFunctions(text: string): vscode.QuickPickItem[] {
-  // Regular expression to match function declarations
-  const functionPattern = /function\s(\w+)/g;
-  const arrowFunctionPattern = /(\w+)\s=\s(?:async\s)?\(\)\s=>/g;
-  let functions: vscode.QuickPickItem[] = [];
-
-  // Line by line search for function declarations
-  const lines = text.split("\n");
-  for (let line of lines) {
-    const functionMatch = functionPattern.exec(line);
-    if (functionMatch) {
-      functions.push({ label: functionMatch[1] });
-    }
-    const arrowFunctionMatch = arrowFunctionPattern.exec(line);
-    if (arrowFunctionMatch) {
-      functions.push({ label: arrowFunctionMatch[1] });
-    }
+function findFunctions(code: string): string[] {
+  // Match both traditional functions and arrow functions
+  const functionRegex =
+    /(?:function|const|let|var)\s+(\w+)\s*(?:\(.*?\)\s*{|\s*=\s*\(.*?\)\s*=>)/g;
+  let match;
+  const functions = [];
+  while ((match = functionRegex.exec(code)) !== null) {
+    functions.push(match[1]);
   }
-
   return functions;
-}
-
-async function executeNodeFunction(
-  functionName: string,
-  filePath: string,
-  fileContent: string
-) {
-  // Show a temporary status bar message
-  const status = vscode.window.setStatusBarMessage(
-    `Executing function: ${functionName}`
-  );
-
-  // Create a temporary file to execute the function
-  const splitted = filePath.split("/");
-  const tempFilePath = `${splitted.slice(0, -1).join("/")}/.${splitted.at(-1)}`;
-  // Write the file content to the temporary file
-  const newFileContent = `${fileContent}\n${functionName}();`;
-  await fs.writeFile(tempFilePath, newFileContent);
-  // Open a new terminal
-  const terminal = vscode.window.createTerminal(
-    `node-exec-function: ${functionName}`
-  );
-  // Execute the function
-  const functionCmd = `npx tsx ${tempFilePath} && echo "\nPress enter to close the terminal" && read && exit`;
-  terminal.sendText(functionCmd);
-
-  // Remove the temporary file when the terminal is closed
-  vscode.window.onDidCloseTerminal((t) => {
-    if (t === terminal) {
-      fs.unlink(tempFilePath);
-    }
-  });
-  // Show the terminal
-  terminal.show();
-  // Remove the status bar message
-  status.dispose();
 }
 
 export function deactivate() {}

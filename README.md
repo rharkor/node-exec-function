@@ -1,6 +1,6 @@
 # Node Execute Function Extension
 
-## erview
+## Overview
 
 The Node Execute Function Extension for Visual Studio Code allows users to quickly execute JavaScript functions directly from their code editor. It detects function declarations in the active file and provides a simple interface for running these functions in a separate environment.
 
@@ -40,6 +40,10 @@ Install directly from the Visual Studio Code Marketplace. Search for "Node Execu
 ## Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests on the repository for bug fixes, improvements, or new features.
+
+Note to myself command to publish:
+`vsce package`
+https://marketplace.visualstudio.com/manage/publishers/rharkor?auth_redirect=True
 
 ## License
 
