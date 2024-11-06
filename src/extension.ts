@@ -54,11 +54,14 @@ export function activate(context: vscode.ExtensionContext) {
         )}`;
 
         // Write the file content with the function call
-        const newFileContent = `${fileContent}\n${functionName}();`;
+        const newFileContent = `${fileContent}\n${functionName}().then(() => process.exit(0));`;
         await fs.promises.writeFile(tempFilePath, newFileContent);
 
-        // Execute the function using tsx
-        const functionCmd = `npx -y tsx ${tempFilePath} && echo "\nPress enter to close the terminal" && read && exit`;
+        // Cross-platform command for executing the function
+        const isWindows = process.platform === "win32";
+        const pauseCommand = isWindows ? "pause" : "read";
+        const newLineCmd = isWindows ? "echo." : "echo";
+        const functionCmd = `npx -y tsx ${tempFilePath} && ${newLineCmd} && echo "Press any key to close the terminal" && ${pauseCommand} && exit`;
         terminal.sendText(functionCmd);
 
         // Clean up temp file when terminal closes
@@ -81,7 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
 function findFunctions(code: string): string[] {
   // Match both traditional functions and arrow functions
   const functionRegex =
-    /(?:function|const|let|var)\s+(\w+)\s*(?:\(.*?\)\s*{|\s*=\s*\(.*?\)\s*=>)/g;
+    /(?:async\s+function|function|const|let|var)\s+(\w+)\s*(?:\(.*?\)\s*{|\s*=\s*\(.*?\)\s*=>|\s*=\s*async\s*\(.*?\)\s*=>)/g;
   let match;
   const functions = [];
   while ((match = functionRegex.exec(code)) !== null) {
